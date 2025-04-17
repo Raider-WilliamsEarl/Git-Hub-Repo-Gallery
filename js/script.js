@@ -1,12 +1,14 @@
 //Targets the profile section//
 const overview = document.querySelector(".overview");
 const username = "Raider-WilliamsEarl";
+const repoList = document.querySelector(".repo-list");
 const reposClass = document.querySelector(".repos");
 const repoDataClass = document.querySelector(".repo-data")
 
 //Targets unordered list//
-const repoList = document.querySelector("ul");
 
+
+//Fetches GitHub Profile//
 const gitData = async function () {
     const res = await fetch(`https://api.github.com/users/${username}`);
     const data = await res.json();
@@ -31,6 +33,7 @@ const fetchedGit = function (data) {
     gitRepoData()
 }
 
+//Fetches Repo Data//
 const gitRepoData = async function () {
     const repoRes = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
     const repoData = await repoRes.json();
@@ -46,3 +49,41 @@ const fetchedRepos = function (repos) {
     }
 }
 
+repoList.addEventListener("click", function (e){
+    if (e.target.matches("h3")) {
+       const  repoName = e.target. innerText;
+       getRepoName(repoName);
+    }
+});
+
+const getRepoName = async function (repoName) {
+    const specRepoRes = await fetch(`https://api.github.com/repos/${username}/${repoName}`);
+    const specRepoData = await specRepoRes.json();
+
+    //Get Languages//
+    const fetchLanguages = await fetch (specRepoData.languages_url)
+    const languageData = await fetchLanguages.json();
+    console.log(languageData)
+
+    //List of languages//
+    const languages = []
+    for (const language in languageData) {
+        languages.push(language);
+    }
+    displayRepoInfo(specRepoData, languages);
+};
+
+const displayRepoInfo = async function (specRepoData, languages) {
+    repoDataClass.innerHTML="";
+    repoDataClass.classList.remove("hide");
+    reposClass.classList.add("hide")
+    const div = document.createElement("div");
+    div.innerHTML = `
+    <h3>Name: ${specRepoData.name}</h3>
+    <p>Description: ${specRepoData.description}</p>
+    <p>Default Branch: ${specRepoData.default_branch}</p>
+    <p>Languages: ${languages.join(", ")}</p>
+    <a class="visit" href="${specRepoData.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>
+    `;
+    repoDataClass.append(div);
+}
